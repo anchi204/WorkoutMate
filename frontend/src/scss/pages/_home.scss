@@ -22,7 +22,7 @@
     "search search space space space"
     "search search space space space"
     "workouts workouts add-btn add-btn add-btn"
-    "workouts workouts chart chart chart"
+    "workouts workouts ai-btn ai-btn ai-btn"
     "workouts workouts chart chart chart"
     "workouts workouts chart chart chart"
     "workouts workouts chart chart chart"
@@ -40,15 +40,12 @@
 }
 
 @media screen and (max-width: 1024px) {
-
   .home--container {
     background-size: 1500px;
   }
-
 }
 
 @media screen and (max-width: 450px) {
-
   .home--container {
     height: fit-content;
     min-height: 100vh;
@@ -62,6 +59,7 @@
       "chart chart"
       "space space"
       "add-btn add-btn"
+      "ai-btn ai-btn"
       "search search"
       "workouts workouts"
       "workouts workouts"
@@ -70,5 +68,4 @@
       "pagination pagination";
     min-width: unset;
   }
-  
 }

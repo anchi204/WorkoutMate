@@ -11,6 +11,7 @@ const About = lazy(() => import("./pages/About"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const ConfirmedAccount = lazy(() => import("./pages/ConfirmedAccount"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const AIWorkoutPlanner = lazy(() => import("./pages/AIWorkoutPlanner"));
 const MemoNavbar = memo(Navbar);
 
 function App() {
@@ -109,6 +110,10 @@ function App() {
             <Route
               path="about"
               element={user ? <Navigate to="/" /> : <About />}
+            />
+            <Route
+              path="/ai-planner"
+              element={user ? <AIWorkoutPlanner /> : <Navigate to="/login" />}
             />
             <Route path="reset-password/:token" element={<ResetPassword />} />
             <Route path="confirm-account/:accountConfirmationToken" element={<ConfirmedAccount />} />
