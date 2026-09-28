@@ -24,12 +24,8 @@ export default function Home() {
   const { allUserWorkoutsMuscleGroups, noWorkoutsByQuery } = workouts;
   const page = useSelector((state) => state.page);
   const query = useSelector((state) => state.query);
-  const { total, workoutsChunk } = workouts;
   const { search } = useSearch();
   const searchInputRef = useRef();
-  /**
-   * This variable is the ultimate indicator for any workouts existing in the DB.
-   */
   const muscleGroups =
     allUserWorkoutsMuscleGroups && allUserWorkoutsMuscleGroups.length;
 
@@ -105,6 +101,15 @@ export default function Home() {
           Buff It Up
         </button>
 
+        <button
+          className="add--workout ai--planner--home--btn"
+          onClick={() => {
+            window.location.href = "/ai-planner";
+          }}
+        >
+          ✨ AI Workout Planner
+        </button>
+
         {isEditWorkoutFormMounted && (
           <Suspense>
             <EditWorkout />
@@ -112,7 +117,6 @@ export default function Home() {
         )}
 
         {total ? <MemoPagination /> : ""}
-
         <div className="space"></div>
       </div>
     </div>
