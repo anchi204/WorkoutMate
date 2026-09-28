@@ -22,6 +22,7 @@ app.use(cors({
 // Routes
 app.use('/api/users', require('./src/routes/users'));
 app.use('/api/workouts', require('./src/routes/workouts'));
+app.use('/api/ai', require('./src/routes/aiWorkout'));
 app.use('/api/reset-password', require('./src/routes/resetPassword'));
 
 const PORT = process.env.PORT || 5000;
