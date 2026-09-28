@@ -5,6 +5,42 @@ const ALLOWED_EXPERIENCE = ["beginner", "intermediate", "advanced"];
 
 const clamp = (value, min, max) => Math.min(Math.max(Number(value), min), max);
 
+const workoutPlanSchema = {
+  type: "OBJECT",
+  properties: {
+    title: { type: "STRING" },
+    summary: { type: "STRING" },
+    weeklySchedule: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          day: { type: "STRING" },
+          focus: { type: "STRING" },
+          exercises: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                name: { type: "STRING" },
+                sets: { type: "INTEGER" },
+                reps: { type: "STRING" },
+                restSeconds: { type: "INTEGER" },
+                notes: { type: "STRING" },
+              },
+              required: ["name", "sets", "reps", "restSeconds", "notes"],
+            },
+          },
+        },
+        required: ["day", "focus", "exercises"],
+      },
+    },
+    progressionTip: { type: "STRING" },
+    safetyNote: { type: "STRING" },
+  },
+  required: ["title", "summary", "weeklySchedule", "progressionTip", "safetyNote"],
+};
+
 const generateWorkoutPlan = async (req, res) => {
   try {
     const {
@@ -49,9 +85,9 @@ const generateWorkoutPlan = async (req, res) => {
       date: workout.createdAt,
     }));
 
-    if (!process.env.OPENAI_API_KEY) {
+    if (!process.env.GEMINI_API_KEY) {
       return res.status(503).json({
-        error: "AI planner is not configured. Add OPENAI_API_KEY to the backend environment.",
+        error: "AI planner is not configured. Add GEMINI_API_KEY to the backend environment.",
       });
     }
 
@@ -74,75 +110,41 @@ const generateWorkoutPlan = async (req, res) => {
       recentWorkoutHistory: workoutHistory,
     });
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || "gpt-4o-mini",
-        temperature: 0.4,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "workout_plan",
-            strict: true,
-            schema: {
-              type: "object",
-              additionalProperties: false,
-              properties: {
-                title: { type: "string" },
-                summary: { type: "string" },
-                weeklySchedule: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    additionalProperties: false,
-                    properties: {
-                      day: { type: "string" },
-                      focus: { type: "string" },
-                      exercises: {
-                        type: "array",
-                        items: {
-                          type: "object",
-                          additionalProperties: false,
-                          properties: {
-                            name: { type: "string" },
-                            sets: { type: "integer" },
-                            reps: { type: "string" },
-                            restSeconds: { type: "integer" },
-                            notes: { type: "string" },
-                          },
-                          required: ["name", "sets", "reps", "restSeconds", "notes"],
-                        },
-                      },
-                    },
-                    required: ["day", "focus", "exercises"],
-                  },
-                },
-                progressionTip: { type: "string" },
-                safetyNote: { type: "string" },
-              },
-              required: ["title", "summary", "weeklySchedule", "progressionTip", "safetyNote"],
-            },
-          },
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL || "gemini-2.5-flash"}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": process.env.GEMINI_API_KEY,
         },
-      }),
-    });
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: systemPrompt }],
+          },
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: userPrompt }],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.4,
+            responseMimeType: "application/json",
+            responseSchema: workoutPlanSchema,
+          },
+        }),
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("OpenAI API error:", data);
+      console.error("Gemini API error:", data);
       return res.status(502).json({ error: "The AI service could not generate a plan right now." });
     }
 
-    const content = data.choices?.[0]?.message?.content;
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!content) {
       return res.status(502).json({ error: "The AI service returned an empty plan." });
     }
