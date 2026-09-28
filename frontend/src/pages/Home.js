@@ -21,7 +21,7 @@ export default function Home() {
   );
   const workouts = useSelector((state) => state.workouts);
   const loading = useSelector((state) => state.loader);
-  const { allUserWorkoutsMuscleGroups, noWorkoutsByQuery } = workouts;
+  const { allUserWorkoutsMuscleGroups, noWorkoutsByQuery, total, workoutsChunk } = workouts;
   const page = useSelector((state) => state.page);
   const query = useSelector((state) => state.query);
   const { search } = useSearch();
@@ -42,7 +42,7 @@ export default function Home() {
 
   useEffect(() => {
     dispatch({ type: "SET_CHART_LOADER"});
-  }, [dispatch])
+  }, [dispatch]);
 
   const renderWorkoutsOrNoWorkoutsMessageOrPlaceholder = () => {
     if (loading.workouts) {
